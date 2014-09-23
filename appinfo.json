@@ -1,0 +1,19 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        "configurable"
+    ],
+    "companyName": "silentforce",
+    "longName": "Bold Hours",
+    "projectType": "native",
+    "resources": {
+        "media": []
+    },
+    "shortName": "Bold Hours",
+    "uuid": "513ac1ac-9575-48c8-953a-ec7f50d10658",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": true
+    }
+}

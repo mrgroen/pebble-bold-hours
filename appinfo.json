@@ -7,7 +7,73 @@
     "longName": "Bold Hours",
     "projectType": "native",
     "resources": {
-        "media": []
+        "media": [
+            {
+                "file": "fonts/Asakim_Bold_38.ttf",
+                "name": "FONT_ASAKIM_BOLD_38",
+                "type": "font"
+            },
+            {
+                "file": "images/bold-hour-12-inv.png",
+                "name": "IMAGE_NUM_12",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-11-inv.png",
+                "name": "IMAGE_NUM_11",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-10-inv.png",
+                "name": "IMAGE_NUM_10",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-9-inv.png",
+                "name": "IMAGE_NUM_9",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-8-inv.png",
+                "name": "IMAGE_NUM_8",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-7-inv.png",
+                "name": "IMAGE_NUM_7",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-6-inv.png",
+                "name": "IMAGE_NUM_6",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-5-inv.png",
+                "name": "IMAGE_NUM_5",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-4-inv.png",
+                "name": "IMAGE_NUM_4",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-3-inv.png",
+                "name": "IMAGE_NUM_3",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-2-inv.png",
+                "name": "IMAGE_NUM_2",
+                "type": "png"
+            },
+            {
+                "file": "images/bold-hour-1-inv.png",
+                "name": "IMAGE_NUM_1",
+                "type": "png"
+            }
+        ]
     },
     "shortName": "Bold Hours",
     "uuid": "513ac1ac-9575-48c8-953a-ec7f50d10658",

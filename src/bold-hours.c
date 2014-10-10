@@ -13,11 +13,14 @@
 // includes
 #include <pebble.h>
 
+// defines
+#define UNINITTED -1
+
 // assets
 static Window *s_main_window;
 static BitmapLayer *s_hours_layer;
 static GBitmap *s_hours_bitmap;
-static unsigned int s_loaded_hour;
+static int s_loaded_hour = UNINITTED;
 static TextLayer *s_minutes_layer;
 static GRect s_minutes_frame;
 static TextLayer *s_seconds_layer;
@@ -30,21 +33,33 @@ const int IMAGE_RESOURCE_IDS[12] = {
 };
 
 // functions
-static void load_hour_image(unsigned int hour) {
-  if (hour < 1 || hour > 12) {
-    return;
-  }
-  if (!s_hours_bitmap) {
-    s_hours_bitmap = gbitmap_create_with_resource(IMAGE_RESOURCE_IDS[hour-1]);
-    bitmap_layer_set_bitmap(s_hours_layer, s_hours_bitmap);
-    s_loaded_hour = hour;
+
+/*
+  Function that unloads the hour image.
+*/
+void unload_hour_image() {
+  if (s_hours_bitmap) {
+    gbitmap_destroy(s_hours_bitmap);
+    s_hours_bitmap = 0;
+    s_loaded_hour = 0;
   }
 }
 
-static void unload_hour_image() {
-  if (s_hours_bitmap) {
-    gbitmap_destroy(s_hours_bitmap);
-    s_loaded_hour = 0;
+/*
+  Function that loads the hour image.
+*/
+void load_hour_image(int hourInt) {
+  // ignore hours out of range
+  if (hourInt < 1 || hourInt > 12) {
+    return;
+  }
+  // unload old hour
+  unload_hour_image();
+  // load new hour
+  if (!s_hours_bitmap) {
+    s_hours_bitmap = gbitmap_create_with_resource(IMAGE_RESOURCE_IDS[hourInt-1]);
+    bitmap_layer_set_bitmap(s_hours_layer, s_hours_bitmap);
+    s_loaded_hour = hourInt;
   }
 }
 
@@ -73,20 +88,19 @@ void set_seconds_layer_location(unsigned short horiz) {
 /*
   Function to update the time layers.
 */
-static void update_time() {
+void update_time() {
   // get a tm structure
   time_t temp = time(NULL);
   struct tm *tick_time = localtime(&temp);
   
   // 12 hour clock
-  unsigned int hour = tick_time->tm_hour % 12;
+  unsigned short hour = tick_time->tm_hour % 12;
 
   // converts "0" to "12"
   hour = hour ? hour : 12;
 
   // only do memory unload/load if necessary
   if (s_loaded_hour != hour) {
-    unload_hour_image();
     load_hour_image(hour);
   }
   
@@ -111,13 +125,13 @@ static void update_time() {
 /*
   Function to update the seconds layer.
 */
-static void update_seconds() {
+void update_seconds() {
   // get a tm structure
   time_t temp = time(NULL);
   struct tm *tick_time = localtime(&temp);
   
   // 12 hour clock
-  unsigned int hour = tick_time->tm_hour % 12;
+  unsigned short hour = tick_time->tm_hour % 12;
 
   // converts "0" to "12"
   hour = hour ? hour : 12;
@@ -155,7 +169,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 /*
   Handler function to create the layers within the main window.
 */
-static void main_window_load(Window *window) {
+void main_window_load(Window *window) {
   // create layers
   s_seconds_frame = GRect(53, 83, 40, 40);
   s_seconds_layer = text_layer_create(s_seconds_frame);
@@ -182,7 +196,7 @@ static void main_window_load(Window *window) {
 /*
   Handler function to destroy all layers within the main window.
 */
-static void main_window_unload(Window *window) {
+void main_window_unload(Window *window) {
   if (s_seconds_layer) {
     text_layer_destroy(s_seconds_layer);
   }
@@ -195,7 +209,7 @@ static void main_window_unload(Window *window) {
   }
 }
 
-static void init() {
+void init() {
   // create main window element and assign to pointer
   s_main_window = window_create();
 
@@ -218,7 +232,7 @@ static void init() {
   update_seconds();
 }
 
-static void deinit() {
+void deinit() {
   // unsubscribe from TickTimerService
   tick_timer_service_unsubscribe();
   // destroy window

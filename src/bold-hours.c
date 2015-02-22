@@ -12,7 +12,12 @@
 
 // includes
 #include <pebble.h>
+#include <pebble_fonts.h>
 
+// settings
+#define VIBE_ON_HOUR false
+#define SHOW_DAY true
+  
 // defines
 #define UNINITTED -1
 
@@ -25,6 +30,8 @@ static TextLayer *s_minutes_layer;
 static GRect s_minutes_frame;
 static TextLayer *s_seconds_layer;
 static GRect s_seconds_frame;
+static int s_loaded_day = UNINITTED;
+static int s_loaded_day_toggle = 0;
 const int IMAGE_RESOURCE_IDS[12] = {
   RESOURCE_ID_IMAGE_NUM_1, RESOURCE_ID_IMAGE_NUM_2, RESOURCE_ID_IMAGE_NUM_3,
   RESOURCE_ID_IMAGE_NUM_4, RESOURCE_ID_IMAGE_NUM_5, RESOURCE_ID_IMAGE_NUM_6,
@@ -77,12 +84,15 @@ void set_minute_layer_location(unsigned short horiz) {
 /*
   Function to change the location of the seconds layer.
 */
-void set_seconds_layer_location(unsigned short horiz) {
+void set_seconds_layer_location(unsigned short horiz, unsigned short verti) {
   if (s_seconds_frame.origin.x != horiz) {
     s_seconds_frame.origin.x = horiz;
-    layer_set_frame(text_layer_get_layer(s_seconds_layer), s_seconds_frame);
-    layer_mark_dirty(text_layer_get_layer(s_seconds_layer));
   }
+  if (s_seconds_frame.origin.y != verti) {
+    s_seconds_frame.origin.y = verti;
+  }
+  layer_set_frame(text_layer_get_layer(s_seconds_layer), s_seconds_frame);
+  layer_mark_dirty(text_layer_get_layer(s_seconds_layer));
 }
 
 /*
@@ -129,7 +139,7 @@ void update_seconds() {
   // get a tm structure
   time_t temp = time(NULL);
   struct tm *tick_time = localtime(&temp);
-  
+
   // 12 hour clock
   unsigned short hour = tick_time->tm_hour % 12;
 
@@ -139,18 +149,52 @@ void update_seconds() {
   // long-lived buffer for the seconds
   static char s_seconds[] = "00";
   
-  // set seconds
-  strftime(s_seconds, sizeof("00"), "%S", tick_time);
-  
-  // change seconds layer location
-  unsigned short n1s = (s_seconds[0]=='1') + (s_seconds[1]=='1');
-  if (hour == 10 || hour == 12) {
-    set_seconds_layer_location(70 + 3*n1s);
+  if (SHOW_DAY) {
+    // toggle day format
+    if (s_loaded_day_toggle == 0) {
+      s_loaded_day_toggle = 1;
+    } else {
+      s_loaded_day_toggle = 0;
+    }
+    // show day format
+    if (s_loaded_day_toggle == 0) {
+      // set day in digits
+      text_layer_set_font(s_seconds_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ASAKIM_BOLD_38)));
+      strftime(s_seconds, sizeof("00"), "%d", tick_time);
+      // remember day
+      s_loaded_day = (int)s_seconds;
+      // change seconds layer location
+      unsigned short n1s = (s_seconds[0]=='1') + (s_seconds[1]=='1');
+      if (hour == 10 || hour == 12) {
+        set_seconds_layer_location(70 + 3*n1s, 83);
+      } else {
+        set_seconds_layer_location(53 + 3*n1s, 83);
+      }
+    } else {
+      // set day in text
+      text_layer_set_font(s_seconds_layer, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+      strftime(s_seconds, sizeof("Ma"), "%a", tick_time);
+      // change seconds layer location
+      unsigned short n1s = 0;
+      if (hour == 10 || hour == 12) {
+        set_seconds_layer_location(70 + 3*n1s, 90);
+      } else {
+        set_seconds_layer_location(53 + 3*n1s, 90);
+      }
+    }
   } else {
-    set_seconds_layer_location(53 + 3*n1s);
+    // set seconds
+    strftime(s_seconds, sizeof("00"), "%S", tick_time);
+    // change seconds layer location
+    unsigned short n1s = (s_seconds[0]=='1') + (s_seconds[1]=='1');
+    if (hour == 10 || hour == 12) {
+      set_seconds_layer_location(70 + 3*n1s, 83);
+    } else {
+      set_seconds_layer_location(53 + 3*n1s, 83);
+    }
   }
   
-  // show seconds
+  // show seconds or day
   text_layer_set_text(s_seconds_layer, s_seconds);
 }
 
@@ -158,12 +202,14 @@ void update_seconds() {
   Handler function to update the time, which gets triggered by the TickTimerService.
 */
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
-  if (units_changed & SECOND_UNIT) {
-    update_seconds();
-  }
-  if (units_changed & MINUTE_UNIT) {
-    update_time();
-  }
+
+  if ((units_changed & SECOND_UNIT) == SECOND_UNIT) { update_seconds(); }
+  if ((units_changed & MINUTE_UNIT) == MINUTE_UNIT) { update_time(); }
+
+  #if VIBE_ON_HOUR
+    if ((units_changed & HOUR_UNIT) == HOUR_UNIT) { vibes_double_pulse(); }
+  #endif
+
 }
 
 /*

@@ -3,12 +3,13 @@
     "capabilities": [
         "configurable"
     ],
-    "companyName": "silentforce",
+    "companyName": "silentforce.nl",
     "longName": "Bold Hours",
     "projectType": "native",
     "resources": {
         "media": [
             {
+                "compatibility": "2.7",
                 "file": "fonts/Asakim_Bold_38.ttf",
                 "name": "FONT_ASAKIM_BOLD_38",
                 "type": "font"
@@ -78,7 +79,7 @@
     "shortName": "Bold Hours",
     "uuid": "513ac1ac-9575-48c8-953a-ec7f50d10658",
     "versionCode": 1,
-    "versionLabel": "1.0",
+    "versionLabel": "1.1",
     "watchapp": {
         "watchface": true
     }

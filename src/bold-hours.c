@@ -32,6 +32,12 @@ static TextLayer *s_seconds_layer;
 static GRect s_seconds_frame;
 static int s_loaded_day = UNINITTED;
 static int s_loaded_day_toggle = 0;
+
+// fonts
+static GFont font1;
+static GFont font2;
+
+// images
 const int IMAGE_RESOURCE_IDS[12] = {
   RESOURCE_ID_IMAGE_NUM_1, RESOURCE_ID_IMAGE_NUM_2, RESOURCE_ID_IMAGE_NUM_3,
   RESOURCE_ID_IMAGE_NUM_4, RESOURCE_ID_IMAGE_NUM_5, RESOURCE_ID_IMAGE_NUM_6,
@@ -159,7 +165,7 @@ void update_seconds() {
     // show day format
     if (s_loaded_day_toggle == 0) {
       // set day in digits
-      text_layer_set_font(s_seconds_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ASAKIM_BOLD_38)));
+      text_layer_set_font(s_seconds_layer, font1);
       strftime(s_seconds, sizeof("00"), "%d", tick_time);
       // remember day
       s_loaded_day = (int)s_seconds;
@@ -172,14 +178,45 @@ void update_seconds() {
       }
     } else {
       // set day in text
-      text_layer_set_font(s_seconds_layer, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
-      strftime(s_seconds, sizeof("Ma"), "%a", tick_time);
+      text_layer_set_font(s_seconds_layer, font2);
+      // pick day of the week
+      int weekDay = tick_time->tm_wday;
+      switch (weekDay) {
+        case 1:
+          s_seconds[0] = 'M';
+          s_seconds[1] = 'A';
+        break;
+        case 2:
+          s_seconds[0] = 'D';
+          s_seconds[1] = 'I';
+        break;
+        case 3:
+          s_seconds[0] = 'W';
+          s_seconds[1] = 'O';
+        break;
+        case 4:
+          s_seconds[0] = 'D';
+          s_seconds[1] = 'O';
+        break;
+        case 5:
+          s_seconds[0] = 'V';
+          s_seconds[1] = 'R';
+        break;
+        case 6:
+          s_seconds[0] = 'Z';
+          s_seconds[1] = 'A';
+        break;
+        default:
+          s_seconds[0] = 'Z';
+          s_seconds[1] = 'O';
+        break;
+      }
       // change seconds layer location
-      unsigned short n1s = 0;
+      unsigned short n1s = 5;
       if (hour == 10 || hour == 12) {
-        set_seconds_layer_location(70 + 3*n1s, 90);
+        set_seconds_layer_location(70 + n1s, 94);
       } else {
-        set_seconds_layer_location(53 + 3*n1s, 90);
+        set_seconds_layer_location(53 + n1s, 94);
       }
     }
   } else {
@@ -226,12 +263,12 @@ void main_window_load(Window *window) {
   // setup seconds layer
   text_layer_set_text_color(s_seconds_layer, GColorWhite);
   text_layer_set_background_color(s_seconds_layer, GColorClear);
-  text_layer_set_font(s_seconds_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ASAKIM_BOLD_38)));
+  text_layer_set_font(s_seconds_layer, font2);
   
   // setup minutes layer
   text_layer_set_text_color(s_minutes_layer, GColorWhite);
   text_layer_set_background_color(s_minutes_layer, GColorClear);
-  text_layer_set_font(s_minutes_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ASAKIM_BOLD_38)));
+  text_layer_set_font(s_minutes_layer, font1);
   
   // setup layers
   layer_add_child(bitmap_layer_get_layer(s_hours_layer), text_layer_get_layer(s_seconds_layer));
@@ -256,6 +293,10 @@ void main_window_unload(Window *window) {
 }
 
 void init() {
+  // load fonts
+  font1 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ASAKIM_BOLD_38));
+  font2 = fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD);
+  
   // create main window element and assign to pointer
   s_main_window = window_create();
 
